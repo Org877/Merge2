@@ -1,0 +1,10 @@
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+#m2-grafo-container {
+    width: 100%;
+    position: relative;
+}
+.card {
+    border-radius: 0.5rem;
+}
