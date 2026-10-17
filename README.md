@@ -1,7 +1,5 @@
 # Plataforma interactiva: Lenguajes, Grafos y Complejidad
 
-Aplicación web para que usuarios no especializados (p. ej. estudiantes de nuevo ingreso) experimenten con autómatas, optimización de rutas y complejidad algorítmica. Funciona 100 % en local.
-
 Arquitectura en tres capas:
 
 1. **Cómputo determinista (backend):** FastAPI. Única fuente de verdad de los resultados.
@@ -11,6 +9,7 @@ Arquitectura en tres capas:
 ## Requisitos
 - Windows 10/11, Python 3.11 o superior.
 - (Opcional, recomendado) Ollama, para las explicaciones con LLM. Hardware objetivo: RTX 5070 con 8 GB de VRAM.
+(Es el equipo donde lo corrimos)
 
 ## Instalación y ejecución (PowerShell)
 ```powershell
@@ -124,17 +123,3 @@ Los errores de validación devuelven mensajes en español en el campo `detail`, 
 python -m pytest -q
 ```
 Cubren los tres módulos (casos válidos y de error), el servicio de archivos estáticos y el fallback del explicador cuando Ollama no está activo.
-
-## Cambios respecto al código original
-- Backend dividido en `core/` (lógica pura) y `routers/` (API); `main.py` monta routers y frontend.
-- Hill-Climbing con reinicios y detección de mínimo local, y modo de alcance máximo.
-- A* usa f = g + h y Greedy usa f = h con heurística real.
-- Reachability implementado con Savitch y contrastado con BFS (antes devolvía un valor fijo).
-- Métricas reales de tiempo y memoria en todos los módulos.
-- Capa de explicación completa: cliente Ollama, streaming, fichas teóricas y plantillas de respaldo.
-- Frontend funcional: lectura de los formularios, grafos y autómatas dibujados con Cytoscape, gráficas con Chart.js, explicación en vivo y mensajes de error claros.
-
-## Pendiente respecto al diagrama del proyecto
-- **Módulo 1:** operaciones de cadenas avanzadas (potencia, subsecuencias, verificación de prefijo/sufijo/subcadena) y conversión AFND → AFD.
-- **Módulo 2:** coordenadas por nodo para calcular heurísticas automáticamente y edición del grafo arrastrando nodos.
-- **Módulo 3:** más ordenamientos (selection, bubble, quick, `sorted`), SAT y coloreado de grafos, y verificadores polinomiales de certificados para los problemas NP.
