@@ -1,4 +1,5 @@
-import math
+import random
+from collections import deque
 from heapq import heappop, heappush
 
 def procesar_grafo(grafo_dict, dirigido):
@@ -10,6 +11,7 @@ def procesar_grafo(grafo_dict, dirigido):
             adj[u] = []
         for vecino in vecinos:
             v, peso = str(vecino[0]), float(vecino[1])
+            adj.setdefault(v, [])  # nodos que solo aparecen como destino
             if (v, peso) not in adj[u]:
                 adj[u].append((v, peso))
             if not dirigido:
@@ -26,7 +28,8 @@ def ejecutar_busqueda_grafo(grafo_raw, origen, destino, dirigido, algoritmo, heu
     if origen not in adj or destino not in adj:
         raise ValueError("El nodo de origen o destino no existen en el grafo.")
 
-    if heuristica is None:
+    heuristica_dada = bool(heuristica)
+    if not heuristica:
         heuristica = {k: 0.0 for k in adj.keys()}
 
     def h(n):
@@ -35,7 +38,6 @@ def ejecutar_busqueda_grafo(grafo_raw, origen, destino, dirigido, algoritmo, heu
     traza = []
     
     if algoritmo == "bfs":
-        from collections import deque
         cola = deque([(origen, [origen], 0.0)])
         visitados = {origen}
         orden_visita = []
@@ -170,5 +172,71 @@ def ejecutar_busqueda_grafo(grafo_raw, origen, destino, dirigido, algoritmo, heu
 
         return {"camino": camino_final, "costo": costo_total, "orden_visita": orden_visita, "nodos_visitados": len(orden_visita), "traza": traza}
 
+
+    elif algoritmo == "hill":  # Hill-Climbing (ascenso/descenso de colina por la heurística)
+        if not heuristica_dada:
+            raise ValueError("Hill-Climbing necesita una heurística h(n) (por ejemplo A:3, B:2, D:0).")
+        rng = random.Random(7)
+        mejor = None
+        intentos = max(0, reinicios) + 1
+        orden_visita = []
+        for intento in range(intentos):
+            actual, camino, costo = origen, [origen], 0.0
+            orden_visita.append(origen)
+            traza.append({"paso": len(orden_visita), "descripcion": f"Intento {intento + 1}: inicia en {origen} (h={h(origen)})", "nodo": origen})
+            visitados_loc = {origen}
+            atascado = False
+            primer_paso = intento > 0  # los reinicios arrancan con un primer movimiento aleatorio
+            while actual != destino:
+                vecinos = [(v, p) for v, p in adj.get(actual, []) if v not in visitados_loc]
+                if not vecinos:
+                    atascado = True
+                    break
+                if primer_paso:
+                    v, p = rng.choice(vecinos)
+                    primer_paso = False
+                else:
+                    v, p = min(vecinos, key=lambda x: h(x[0]))
+                    if h(v) >= h(actual) and v != destino:
+                        atascado = True
+                        traza.append({"paso": len(orden_visita) + 1, "descripcion": f"Mínimo local en {actual}: ningún vecino mejora h={h(actual)}", "nodo": actual})
+                        break
+                visitados_loc.add(v)
+                camino.append(v)
+                costo += p
+                actual = v
+                orden_visita.append(v)
+                traza.append({"paso": len(orden_visita), "descripcion": f"Hill-Climbing avanza a {v} (h={h(v)})", "nodo": v})
+            if actual == destino:
+                if mejor is None or costo < mejor[1]:
+                    mejor = (camino, costo)
+                break
+            traza.append({"paso": len(orden_visita), "descripcion": f"Intento {intento + 1} atascado en {actual}", "nodo": actual})
+        camino_final, costo_total = (mejor if mejor else ([], -1.0))
+        return {"camino": camino_final, "costo": costo_total, "orden_visita": orden_visita,
+                "nodos_visitados": len(orden_visita), "traza": traza, "atascado": mejor is None}
+
     else:
         raise ValueError(f"Algoritmo '{algoritmo}' no soportado.")
+
+def alcance_maximo(grafo_raw, origen, dirigido):
+    """BFS completo: todos los nodos alcanzables desde el origen con su distancia en saltos."""
+    origen = str(origen)
+    adj = procesar_grafo(grafo_raw, dirigido)
+    if origen not in adj:
+        raise ValueError("El nodo de origen no existe en el grafo.")
+    dist = {origen: 0}
+    cola = deque([origen])
+    orden = []
+    traza = []
+    while cola:
+        u = cola.popleft()
+        orden.append(u)
+        traza.append({"paso": len(orden), "descripcion": f"Visita {u} a {dist[u]} salto(s) del origen", "nodo": u})
+        for v, _ in adj.get(u, []):
+            if v not in dist:
+                dist[v] = dist[u] + 1
+                cola.append(v)
+    no_alcanzables = sorted(set(adj) - set(dist))
+    return {"alcanzables": dist, "no_alcanzables": no_alcanzables, "orden_visita": orden,
+            "nodos_visitados": len(orden), "traza": traza}

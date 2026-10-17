@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field
 
 class ContratoRespuesta(BaseModel):
@@ -31,11 +31,12 @@ class AutomataRequest(BaseModel):
 class GrafoRequest(BaseModel):
     grafo: Dict[str, List[Tuple[str, float]]]  # nodo -> [(vecino, peso)] o lista de aristas
     origen: str
-    destino: str
+    destino: str = ""
     dirigido: bool = True
     algoritmos: List[str] = ["star", "dijkstra"]
     heuristica: Optional[Dict[str, float]] = None
     reinicios: int = 0  # Para Hill-Climbing
+    modo: str = "ruta"  # "ruta" | "alcance" (alcance máximo desde el origen)
 
 # Esquemas Módulo 3
 class BenchmarkRequest(BaseModel):
@@ -45,3 +46,4 @@ class BenchmarkRequest(BaseModel):
     tamanos_serie: Optional[List[int]] = None  # Para curvas de crecimiento
     semilla: int = 42
     timeout_segundos: float = 5.0
+    incluir_series: bool = False

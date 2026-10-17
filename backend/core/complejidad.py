@@ -62,7 +62,8 @@ def resolver_algoritmo(alg_id: str, datos: list, timeout: float = 5.0) -> dict:
                     encontrado = True
                     subset = [datos[j] for j in range(n) if (i & (1 << j))]
                     break
-            resultado = {"objetivo": target, "encontrado": encontrado, "certificado": subset}
+            resultado = {"objetivo": target, "encontrado": encontrado, "certificado": subset, "n_usado": n,
+                         "verificado": (sum(subset) == target) if encontrado else None}
 
         elif alg_id == "tsp_brute":
             if len(datos) > 10:
@@ -80,11 +81,42 @@ def resolver_algoritmo(alg_id: str, datos: list, timeout: float = 5.0) -> dict:
                 if cost < min_cost:
                     min_cost = cost
                     best_path = list(perm)
-            resultado = {"min_costo": min_cost, "certificado": best_path}
+            resultado = {"min_costo": min_cost, "certificado": best_path, "n_usado": n}
 
         elif alg_id == "reachability":
-            # NSPACE / BFS acotado
-            resultado = {"alcanzable": True, "detalles": "Verificado en espacio logarítmico"}
+            # Grafo dirigido pseudoaleatorio reproducible; n acotado porque Savitch es costoso en tiempo.
+            n = max(2, min(len(datos), 10))
+            rng = random.Random(sum(datos) if datos else 1)
+            aristas = {(i, rng.randrange(n)) for i in range(n) for _ in range(2)}
+            aristas |= {(i, i + 1) for i in range(n - 1) if rng.random() < 0.6}
+            ady = {i: [b for a, b in aristas if a == i] for i in range(n)}
+            k_max = max(1, (n - 1).bit_length())
+            llamadas = [0]
+
+            def savitch(u, v, k):
+                """¿Existe camino de u a v con a lo sumo 2^k aristas? Solo guarda O(log^2 n) bits de pila."""
+                llamadas[0] += 1
+                if time.perf_counter() - inicio > timeout:
+                    raise TimeoutError
+                if u == v or v in ady[u]:
+                    return True
+                if k == 0:
+                    return False
+                return any(savitch(u, w, k - 1) and savitch(w, v, k - 1) for w in range(n))
+
+            try:
+                alcanzable = savitch(0, n - 1, k_max)
+            except TimeoutError:
+                abortado, alcanzable = True, None
+            alc_bfs, cola = {0}, [0]
+            while cola:
+                x = cola.pop()
+                for y in ady[x]:
+                    if y not in alc_bfs:
+                        alc_bfs.add(y); cola.append(y)
+            resultado = {"origen": 0, "destino": n - 1, "n_usado": n, "alcanzable": alcanzable,
+                         "coincide_con_bfs": (alcanzable == ((n - 1) in alc_bfs)) if alcanzable is not None else None,
+                         "llamadas_recursivas": llamadas[0], "profundidad_max": k_max}
 
         else:
             raise ValueError(f"Algoritmo '{alg_id}' desconocido.")

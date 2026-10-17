@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma Académica - Lenguajes, Grafos y Algoritmos</title>
+    <link rel="stylesheet" href="./vendor/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark shadow-sm">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">Plataforma Interactiva de Computación</span>
+        <span id="estado-ollama" class="badge bg-warning text-dark">Verificando Ollama...</span>
+    </div>
+</nav>
+
+<div class="container my-4">
+    <div id="alerta" class="alert alert-danger d-none" role="alert"></div>
+
+    <ul class="nav nav-tabs" id="mainTab" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#mod1" type="button">1. Lenguajes y Autómatas</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#mod2" type="button">2. Rutas y Grafos</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#mod3" type="button">3. Complejidad y Benchmark</button></li>
+    </ul>
+
+    <div class="tab-content bg-white p-4 border border-top-0 rounded-bottom shadow-sm">
+
+        <!-- ================= MÓDULO 1 ================= -->
+        <div class="tab-pane fade show active" id="mod1">
+            <h3 class="mb-3">Traductor de Lenguajes y Simulador de Autómatas</h3>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <label class="form-label" for="m1-tarea">Tarea:</label>
+                        <select id="m1-tarea" class="form-select">
+                            <option value="operacion">Operaciones con lenguajes</option>
+                            <option value="cadena">Análisis de una cadena</option>
+                            <option value="automata">Simular AFD / AFND / AFND-ε</option>
+                        </select>
+                    </div>
+
+                    <!-- Operaciones con lenguajes -->
+                    <div id="m1-form-op">
+                        <div class="mb-2"><label class="form-label">Lenguaje L (separado por comas):</label>
+                            <input type="text" id="m1-L" class="form-control" value="a, b" title="Ej: a, ab, ba"></div>
+                        <div class="mb-2"><label class="form-label">Lenguaje M:</label>
+                            <input type="text" id="m1-M" class="form-control" value="b, c"></div>
+                        <div class="mb-2"><label class="form-label">Alfabeto Σ (para complemento):</label>
+                            <input type="text" id="m1-sigma" class="form-control" value="a, b"></div>
+                        <div class="mb-2"><label class="form-label">Operación:</label>
+                            <select id="m1-op-tipo" class="form-select">
+                                <option value="union">Unión (L ∪ M)</option>
+                                <option value="interseccion">Intersección (L ∩ M)</option>
+                                <option value="diferencia">Diferencia (L − M)</option>
+                                <option value="concatenacion">Concatenación (L · M)</option>
+                                <option value="potencia_n">Potencia L^k</option>
+                                <option value="clausura_positiva">Clausura positiva L⁺ (hasta k)</option>
+                                <option value="complemento">Complemento de L en Σ* (hasta longitud k)</option>
+                                <option value="inversa">Inversa de L</option>
+                            </select></div>
+                        <div class="mb-3"><label class="form-label">Valor k (si aplica):</label>
+                            <input type="number" id="m1-k" class="form-control" value="2" min="0" max="6"></div>
+                    </div>
+
+                    <!-- Cadena -->
+                    <div id="m1-form-cadena" class="d-none">
+                        <div class="mb-3"><label class="form-label">Cadena w:</label>
+                            <input type="text" id="m1-w" class="form-control" value="abba"></div>
+                    </div>
+
+                    <!-- Autómata -->
+                    <div id="m1-form-auto" class="d-none">
+                        <div class="mb-2"><label class="form-label">Tipo:</label>
+                            <select id="m1-tipo-auto" class="form-select">
+                                <option value="afd">AFD</option><option value="afnd">AFND</option><option value="afnde">AFND-ε</option>
+                            </select></div>
+                        <div class="mb-2"><label class="form-label">Estados:</label>
+                            <input type="text" id="m1-estados" class="form-control" value="q0, q1"></div>
+                        <div class="mb-2"><label class="form-label">Alfabeto:</label>
+                            <input type="text" id="m1-alfabeto" class="form-control" value="a, b"></div>
+                        <div class="row g-2 mb-2">
+                            <div class="col"><label class="form-label">Inicial:</label><input type="text" id="m1-inicial" class="form-control" value="q0"></div>
+                            <div class="col"><label class="form-label">Aceptación:</label><input type="text" id="m1-acept" class="form-control" value="q0"></div>
+                        </div>
+                        <div class="mb-2"><label class="form-label">Transiciones (una por línea: origen,símbolo,destino; usa <code>eps</code> para ε):</label>
+                            <textarea id="m1-trans" class="form-control font-monospace" rows="5">q0,a,q1
+q0,b,q0
+q1,a,q0
+q1,b,q1</textarea></div>
+                        <div class="mb-3"><label class="form-label">Palabra a evaluar:</label>
+                            <input type="text" id="m1-palabra" class="form-control" value="abba"></div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary flex-grow-1" id="btn-ejecutar-m1">Ejecutar</button>
+                        <button class="btn btn-outline-secondary" id="btn-ejemplo-m1" type="button">Cargar ejemplo</button>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <h5>Visualización y resultados</h5>
+                    <div id="m1-viz" class="border rounded p-3 bg-light mb-2" style="min-height: 120px;">
+                        <p class="text-muted mb-0">Los resultados aparecerán aquí...</p>
+                    </div>
+                    <div id="m1-cy-wrap" class="d-none">
+                        <div id="m1-cy" class="border rounded bg-white" style="height: 320px;"></div>
+                        <div class="d-flex align-items-center gap-2 mt-2">
+                            <button class="btn btn-sm btn-outline-dark" id="m1-prev">◀ Anterior</button>
+                            <button class="btn btn-sm btn-outline-dark" id="m1-next">Siguiente ▶</button>
+                            <button class="btn btn-sm btn-dark" id="m1-play">▶ Reproducir</button>
+                            <span id="m1-paso" class="ms-2 small"></span>
+                            <span id="m1-veredicto" class="ms-auto badge fs-6"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MÓDULO 2 ================= -->
+        <div class="tab-pane fade" id="mod2">
+            <h3 class="mb-3">Asistente de Logística y Optimización de Rutas</h3>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="mb-2"><label class="form-label">Aristas (una por línea: origen,destino,peso):</label>
+                        <textarea id="m2-aristas" class="form-control font-monospace" rows="7">A,B,2
+A,C,5
+B,C,1
+B,D,4
+C,D,2
+D,E,3
+C,E,6</textarea></div>
+                    <div class="row g-2 mb-2">
+                        <div class="col"><label class="form-label">Origen:</label><input type="text" id="m2-origen" class="form-control" value="A"></div>
+                        <div class="col"><label class="form-label">Destino:</label><input type="text" id="m2-destino" class="form-control" value="E"></div>
+                    </div>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" id="m2-dirigido" checked><label class="form-check-label" for="m2-dirigido">Grafo dirigido</label></div>
+                    <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="m2-alcance"><label class="form-check-label" for="m2-alcance">Solo alcance máximo desde el origen</label></div>
+                    <label class="form-label">Algoritmos (el primero marcado se dibuja):</label>
+                    <div class="mb-2" id="m2-algs">
+                        <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="dijkstra" checked><label class="form-check-label">Dijkstra (exacto)</label></div>
+                        <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="star" checked><label class="form-check-label">A* (g + h)</label></div>
+                        <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="greedy"><label class="form-check-label">Greedy Best-First (h)</label></div>
+                        <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="bfs"><label class="form-check-label">BFS (anchura)</label></div>
+                        <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="dfs"><label class="form-check-label">DFS (profundidad)</label></div>
+                        <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="hill"><label class="form-check-label">Hill-Climbing</label></div>
+                    </div>
+                    <div class="mb-2"><label class="form-label">Heurística h(n) (opcional, <code>A:6, B:5, E:0</code>):</label>
+                        <input type="text" id="m2-heur" class="form-control" value="A:6, B:5, C:3, D:3, E:0"></div>
+                    <div class="mb-3"><label class="form-label">Reinicios (Hill-Climbing):</label>
+                        <input type="number" id="m2-reinicios" class="form-control" value="3" min="0" max="20"></div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success flex-grow-1" id="btn-ejecutar-m2">Buscar</button>
+                        <button class="btn btn-outline-secondary" id="btn-ejemplo-m2" type="button">Cargar ejemplo</button>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <h5>Grafo y ruta hallada</h5>
+                    <div id="m2-grafo-container" class="border rounded bg-white mb-2" style="height: 340px;"></div>
+                    <div class="mb-2"><button class="btn btn-sm btn-dark" id="m2-animar">▶ Animar orden de visita</button>
+                        <span class="small text-muted ms-2">Ruta hallada: línea roja gruesa con ★</span></div>
+                    <div id="m2-tabla" class="table-responsive"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MÓDULO 3 ================= -->
+        <div class="tab-pane fade" id="mod3">
+            <h3 class="mb-3">Auditoría de Escalabilidad y Benchmark (P vs NP vs NSPACE)</h3>
+            <div class="row">
+                <div class="col-lg-4">
+                    <label class="form-label">Algoritmos a comparar (mínimo 2):</label>
+                    <div class="mb-2">
+                        <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="insertion_sort" checked><label class="form-check-label">Insertion Sort <span class="badge bg-success">P</span> O(n²)</label></div>
+                        <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="merge_sort" checked><label class="form-check-label">Merge Sort <span class="badge bg-success">P</span> O(n log n)</label></div>
+                        <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="subset_sum"><label class="form-check-label">Subset-Sum <span class="badge bg-danger">NP</span> O(2ⁿ)</label></div>
+                        <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="tsp_brute"><label class="form-check-label">TSP fuerza bruta <span class="badge bg-danger">NP</span> O(n!)</label></div>
+                        <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="reachability"><label class="form-check-label">Reachability (Savitch) <span class="badge bg-info text-dark">NSPACE</span></label></div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col"><label class="form-label">Tamaño n:</label><input type="number" id="m3-tamano" class="form-control" value="1000" min="2" max="5000"></div>
+                        <div class="col"><label class="form-label">Semilla:</label><input type="number" id="m3-semilla" class="form-control" value="42"></div>
+                    </div>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" id="m3-series" checked><label class="form-check-label" for="m3-series">Incluir curva de crecimiento (tarda más)</label></div>
+                    <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="m3-log" checked><label class="form-check-label" for="m3-log">Escala logarítmica en las gráficas</label></div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-warning flex-grow-1" id="btn-ejecutar-m3">Ejecutar benchmark</button>
+                        <button class="btn btn-outline-secondary" id="btn-ejemplo-m3" type="button">Cargar ejemplo</button>
+                    </div>
+                    <p class="small text-muted mt-2">Los algoritmos exponenciales están limitados en tamaño y tiempo para no colgar el servidor.</p>
+                </div>
+                <div class="col-lg-8">
+                    <div id="m3-avisos"></div>
+                    <h6>Tiempo por algoritmo (ms)</h6>
+                    <div style="height:220px"><canvas id="m3-chart-barras"></canvas></div>
+                    <h6 class="mt-3">Crecimiento tiempo vs. tamaño</h6>
+                    <div style="height:240px"><canvas id="m3-chart-serie"></canvas></div>
+                    <div id="m3-tabla" class="table-responsive mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL DE EXPLICACIÓN -->
+    <div class="card mt-4 shadow-sm border-info">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <span>Explicación del tutor</span>
+            <span>
+                <button id="btn-regenerar" class="btn btn-sm btn-light me-2" disabled>Regenerar explicación</button>
+                <span id="fuente-explicacion" class="badge bg-light text-dark">Fuente: pendiente</span>
+            </span>
+        </div>
+        <div class="card-body">
+            <div id="panel-explicacion" class="text-secondary">
+                Ejecuta cualquier acción en los módulos para recibir una explicación paso a paso.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="./vendor/bootstrap.bundle.min.js"></script>
+<script src="./vendor/cytoscape.min.js"></script>
+<script src="./vendor/chart.umd.js"></script>
+<script src="./js/api.js"></script>
+<script src="./js/app.js"></script>
+</body>
+</html>

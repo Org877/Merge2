@@ -91,8 +91,8 @@ def simular_automata(req) -> dict:
             return cierre
 
         activos = obtener_epsilon_clausura({inicial})
-        traza.append({"paso": 0, "descripcion": f"Estados activos iniciales (con ε-clausura): {list(activos)}", "estados": list(activos)})
-        recorrido = [list(activos)]
+        traza.append({"paso": 0, "descripcion": f"Estados activos iniciales (con ε-clausura): {sorted(activos)}", "estados": sorted(activos)})
+        recorrido = [sorted(activos)]
 
         for idx, simbolo in enumerate(req.palabra):
             siguientes = set()
@@ -101,10 +101,12 @@ def simular_automata(req) -> dict:
                 for d in destinos:
                     siguientes.add(d)
             activos = obtener_epsilon_clausura(siguientes)
-            recorrido.append(list(activos))
-            traza.append({"paso": idx + 1, "descripcion": f"Lee '{simbolo}', nuevos activos: {list(activos)}", "estados": list(activos)})
+            recorrido.append(sorted(activos))
+            traza.append({"paso": idx + 1, "descripcion": f"Lee '{simbolo}', nuevos activos: {sorted(activos)}", "estados": sorted(activos)})
             if not activos:
                 break
 
         pertenece = any(est in aceptacion for est in activos)
         return {"pertenece": pertenece, "traza": traza, "recorrido_estados": recorrido}
+
+    raise ValueError(f"Tipo de autómata '{req.tipo}' no soportado. Usa: afd, afnd o afnde.")
