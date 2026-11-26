@@ -12,13 +12,19 @@ FICHAS = Path(__file__).parent / "fichas"
 def tema_de(contrato: dict) -> str:
     modulo, op = contrato.get("modulo", ""), contrato.get("operacion", "")
     if modulo == "lenguajes":
+        if op == "regex_a_afd":
+            return "regex"
         if op.startswith("simular_"):
             return {"afd": "afd", "afnd": "afnd", "afnde": "afnd_epsilon"}.get(op.split("_", 1)[1], "afd")
         return "lenguajes"
     if modulo == "rutas":
         return "alcance" if op == "alcance_maximo" else {"star": "astar"}.get(op.replace("buscar_", ""), op.replace("buscar_", ""))
     if modulo == "complejidad":
-        return "complejidad"
+        return "auditoria_ast" if op == "auditar_ast" else "complejidad"
+    if modulo == "varillas":
+        return "varillas"
+    if modulo == "probabilistas":
+        return "probabilistas"
     return "lenguajes"
 
 
