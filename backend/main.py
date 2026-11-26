@@ -4,12 +4,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from backend.routers import complejidad, explicar, lenguajes, rutas
+from backend.routers import complejidad, explicar, lenguajes, probabilistas, rutas, varillas
 
 app = FastAPI(
     title="Plataforma Educativa de Computación",
-    version="4.2.0",
-    description="Autómatas, rutas en grafos y complejidad algorítmica, con explicador LLM local.",
+    version="5.0.0",
+    description="Autómatas/Regex, rutas en grafos, complejidad/AST, corte de varillas y probabilistas, con explicador LLM local.",
 )
 
 app.add_middleware(
@@ -23,14 +23,15 @@ app.add_middleware(
 
 @app.get("/api/estado")
 def estado_servidor():
-    return {"estado": "activo", "motor": "FastAPI", "version": "4.2.0"}
+    return {"estado": "activo", "motor": "FastAPI", "version": "5.0.0"}
 
 
 app.include_router(lenguajes.router)
 app.include_router(rutas.router)
 app.include_router(complejidad.router)
+app.include_router(varillas.router)
+app.include_router(probabilistas.router)
 app.include_router(explicar.router)
 
-# El frontend se sirve en "/" (debe montarse al final para no tapar las rutas /api).
 FRONTEND = Path(__file__).resolve().parent.parent / "frontend"
 app.mount("/", StaticFiles(directory=FRONTEND, html=True), name="frontend")

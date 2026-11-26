@@ -1,14 +1,14 @@
-import random
+﻿import random
 
 from fastapi import APIRouter, HTTPException
 
-from backend.core.complejidad import CATALOGO, resolver_algoritmo
-from backend.core.medicion import _candado
-from backend.schemas import BenchmarkRequest, ContratoRespuesta
+from backend.core.complejidad import CATALOGO, auditar_codigo_ast, resolver_algoritmo
+from backend.core.medicion import _candado, medir
+from backend.schemas import AuditoriaCodigoRequest, BenchmarkRequest, ContratoRespuesta
 
 router = APIRouter(prefix="/api/complejidad", tags=["Módulo 3: Complejidad"])
 
-TAM_MAX = 5000                      # tope para que insertion sort no cuelgue el servidor
+TAM_MAX = 5000
 LIMITE_NP = {"subset_sum": 16, "tsp_brute": 10, "reachability": 10}
 SERIE_P = [100, 250, 500, 1000, 2000]
 
@@ -42,8 +42,7 @@ def benchmark(req: BenchmarkRequest):
         datos = _datos(n, req.semilla)
 
     comparativa = []
-    # Se ejecutan en secuencia (nunca en paralelo) para no mezclar mediciones.
-    with _candado:  # evita que otra petición use tracemalloc al mismo tiempo
+    with _candado:
         for alg in req.algoritmos:
             r = resolver_algoritmo(alg, datos, req.timeout_segundos)
             r["clase"] = CATALOGO[alg]["clase"]
@@ -69,7 +68,6 @@ def benchmark(req: BenchmarkRequest):
                         break
                 series.append({"algoritmo": alg, "clase": CATALOGO[alg]["clase"], "tamanos": xs, "tiempos_ms": ts, "memoria_kb": ms})
 
-    # Para el LLM/plantillas: vista compacta sin los arreglos ordenados completos.
     resumen = []
     for r in comparativa:
         res = r["resultado"]
@@ -78,11 +76,33 @@ def benchmark(req: BenchmarkRequest):
         resumen.append({**r, "resultado": res})
 
     return ContratoRespuesta(
-        modulo="complejidad", operacion="benchmark",
+        modulo="complejidad",
+        operacion="benchmark",
         entrada={"algoritmos": req.algoritmos, "tamano": len(datos), "semilla": req.semilla},
         resultado={"comparativa": resumen, "avisos": avisos},
-        visualizacion={"series": series, "barras": [
-            {"algoritmo": r["algoritmo"], "clase": r["clase"], **r["metricas"]} for r in comparativa]},
-        metricas={"tiempo_ms": round(sum(r["metricas"]["tiempo_ms"] for r in comparativa), 4),
-                  "memoria_kb": max(r["metricas"]["memoria_kb"] for r in comparativa)},
+        visualizacion={
+            "series": series,
+            "barras": [{"algoritmo": r["algoritmo"], "clase": r["clase"], **r["metricas"]} for r in comparativa],
+        },
+        metricas={
+            "tiempo_ms": round(sum(r["metricas"]["tiempo_ms"] for r in comparativa), 4),
+            "memoria_kb": max(r["metricas"]["memoria_kb"] for r in comparativa),
+        },
+    )
+
+
+@router.post("/auditar", response_model=ContratoRespuesta)
+def auditar_codigo(req: AuditoriaCodigoRequest):
+    try:
+        salida, met = medir(auditar_codigo_ast, req.codigo)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return ContratoRespuesta(
+        modulo="complejidad",
+        operacion="auditar_ast",
+        entrada={"lineas": len(req.codigo.splitlines())},
+        resultado=salida["resultado"],
+        traza=salida["traza"],
+        visualizacion={"bucles": salida["resultado"]["bucles"]},
+        metricas=met,
     )

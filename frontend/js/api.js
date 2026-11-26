@@ -1,5 +1,20 @@
-// Mismo origen que el backend (FastAPI sirve el frontend). Si abres el HTML con otro servidor, cambia API_BASE.
+// Mismo origen que el backend (FastAPI sirve el frontend).
 const API_BASE = "";
+let _peticionesActivas = 0;
+
+function mostrarSpinner(mostrar, texto = "Procesando cálculo determinista...") {
+    const el = document.getElementById("spinner-global");
+    const txt = document.getElementById("spinner-texto");
+    if (!el) return;
+    if (mostrar) {
+        _peticionesActivas++;
+        if (txt) txt.textContent = texto;
+        el.classList.remove("d-none");
+    } else {
+        _peticionesActivas = Math.max(0, _peticionesActivas - 1);
+        if (_peticionesActivas === 0) el.classList.add("d-none");
+    }
+}
 
 function mostrarError(msg) {
     const a = document.getElementById("alerta");
@@ -12,6 +27,7 @@ function limpiarError() { document.getElementById("alerta").classList.add("d-non
 
 async function apiPost(endpoint, data) {
     limpiarError();
+    mostrarSpinner(true);
     try {
         const response = await fetch(`${API_BASE}${endpoint}`, {
             method: "POST",
@@ -34,6 +50,8 @@ async function apiPost(endpoint, data) {
         console.error("API Error:", error);
         mostrarError("No se pudo conectar con el servidor. ¿Está corriendo uvicorn?");
         return null;
+    } finally {
+        mostrarSpinner(false);
     }
 }
 

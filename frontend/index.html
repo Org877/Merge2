@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plataforma Académica - Lenguajes, Grafos y Algoritmos</title>
+    <title>Plataforma Académica - 5 Módulos Algorítmicos</title>
     <link rel="stylesheet" href="./vendor/bootstrap.min.css">
     <link rel="stylesheet" href="./css/styles.css">
 </head>
@@ -17,12 +17,18 @@
 </nav>
 
 <div class="container my-4">
+    <div id="spinner-global" class="alert alert-info d-none d-flex align-items-center gap-2 py-2" role="status">
+        <div class="spinner-border spinner-border-sm text-info" aria-hidden="true"></div>
+        <span id="spinner-texto">Procesando cálculo determinista...</span>
+    </div>
     <div id="alerta" class="alert alert-danger d-none" role="alert"></div>
 
     <ul class="nav nav-tabs" id="mainTab" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#mod1" type="button">1. Lenguajes y Autómatas</button></li>
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#mod1" type="button">1. Autómatas y Regex</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#mod2" type="button">2. Rutas y Grafos</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#mod3" type="button">3. Complejidad y Benchmark</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#mod3" type="button">3. Complejidad y AST</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#mod4" type="button">4. Corte de Varillas</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#mod5" type="button">5. Probabilistas</button></li>
     </ul>
 
     <div class="tab-content bg-white p-4 border border-top-0 rounded-bottom shadow-sm">
@@ -44,7 +50,7 @@
                     <!-- Operaciones con lenguajes -->
                     <div id="m1-form-op">
                         <div class="mb-2"><label class="form-label">Lenguaje L (separado por comas):</label>
-                            <input type="text" id="m1-L" class="form-control" value="a, b" title="Ej: a, ab, ba"></div>
+                            <input type="text" id="m1-L" class="form-control" value="a, b"></div>
                         <div class="mb-2"><label class="form-label">Lenguaje M:</label>
                             <input type="text" id="m1-M" class="form-control" value="b, c"></div>
                         <div class="mb-2"><label class="form-label">Alfabeto Σ (para complemento):</label>
@@ -84,7 +90,7 @@
                             <div class="col"><label class="form-label">Inicial:</label><input type="text" id="m1-inicial" class="form-control" value="q0"></div>
                             <div class="col"><label class="form-label">Aceptación:</label><input type="text" id="m1-acept" class="form-control" value="q0"></div>
                         </div>
-                        <div class="mb-2"><label class="form-label">Transiciones (una por línea: origen,símbolo,destino; usa <code>eps</code> para ε):</label>
+                        <div class="mb-2"><label class="form-label">Transiciones (origen,símbolo,destino; usa <code>eps</code> para ε):</label>
                             <textarea id="m1-trans" class="form-control font-monospace" rows="5">q0,a,q1
 q0,b,q0
 q1,a,q0
@@ -116,6 +122,43 @@ q1,b,q1</textarea></div>
                     </div>
                 </div>
             </div>
+
+            <!-- Conversor Regex -> AFN-ε -> AFD -->
+            <hr class="my-4">
+            <h4 class="mb-3">Conversor Regex → AFN-ε (Thompson) → AFD (Subconjuntos)</h4>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="mb-2">
+                        <label class="form-label">Expresión Regular (soporta <code>| * + ? ()</code>):</label>
+                        <input type="text" id="m1-regex-expr" class="form-control font-monospace" value="(a|b)*abb">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cadena de prueba:</label>
+                        <input type="text" id="m1-regex-palabra" class="form-control font-monospace" value="aabb">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary flex-grow-1" id="btn-ejecutar-regex" type="button">Convertir y simular</button>
+                        <button class="btn btn-outline-secondary" id="btn-ejemplo-regex" type="button">Ejemplo</button>
+                    </div>
+                    <div id="m1-regex-resumen" class="mt-3 small"></div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button class="btn btn-dark active" id="btn-ver-afd" type="button">Ver AFD resultante</button>
+                            <button class="btn btn-outline-dark" id="btn-ver-afne" type="button">Ver AFN-ε (Thompson)</button>
+                        </div>
+                        <span id="m1-regex-veredicto" class="badge fs-6 bg-secondary">Pendiente</span>
+                    </div>
+                    <div id="m1-regex-cy" class="border rounded bg-white" style="height: 300px;"></div>
+                    <div class="d-flex align-items-center gap-2 mt-2">
+                        <button class="btn btn-sm btn-outline-dark" id="m1-regex-prev" type="button">◀ Anterior</button>
+                        <button class="btn btn-sm btn-outline-dark" id="m1-regex-next" type="button">Siguiente ▶</button>
+                        <button class="btn btn-sm btn-dark" id="m1-regex-play" type="button">▶ Animar traza</button>
+                        <span id="m1-regex-paso" class="ms-2 small text-muted"></span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ================= MÓDULO 2 ================= -->
@@ -142,8 +185,8 @@ C,E,6</textarea></div>
                         <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="dijkstra" checked><label class="form-check-label">Dijkstra (exacto)</label></div>
                         <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="star" checked><label class="form-check-label">A* (g + h)</label></div>
                         <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="greedy"><label class="form-check-label">Greedy Best-First (h)</label></div>
-                        <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="bfs"><label class="form-check-label">BFS (anchura)</label></div>
-                        <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="dfs"><label class="form-check-label">DFS (profundidad)</label></div>
+                        <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="bfs" checked><label class="form-check-label">BFS (anchura)</label></div>
+                        <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="dfs" checked><label class="form-check-label">DFS (profundidad)</label></div>
                         <div class="form-check"><input class="form-check-input m2-alg" type="checkbox" value="hill"><label class="form-check-label">Hill-Climbing</label></div>
                     </div>
                     <div class="mb-2"><label class="form-label">Heurística h(n) (opcional, <code>A:6, B:5, E:0</code>):</label>
@@ -172,14 +215,15 @@ C,E,6</textarea></div>
                 <div class="col-lg-4">
                     <label class="form-label">Algoritmos a comparar (mínimo 2):</label>
                     <div class="mb-2">
-                        <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="insertion_sort" checked><label class="form-check-label">Insertion Sort <span class="badge bg-success">P</span> O(n²)</label></div>
-                        <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="merge_sort" checked><label class="form-check-label">Merge Sort <span class="badge bg-success">P</span> O(n log n)</label></div>
+                        <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="insertion_sort"><label class="form-check-label">Insertion Sort <span class="badge bg-success">P</span> O(n²)</label></div>
+                        <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="merge_sort"><label class="form-check-label">Merge Sort <span class="badge bg-success">P</span> O(n log n)</label></div>
+                        <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="tsp_voraz" checked><label class="form-check-label">TSP Voraz <span class="badge bg-success">P</span> O(n²)</label></div>
+                        <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="tsp_brute" checked><label class="form-check-label">TSP Exacto <span class="badge bg-danger">NP</span> O(n!)</label></div>
                         <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="subset_sum"><label class="form-check-label">Subset-Sum <span class="badge bg-danger">NP</span> O(2ⁿ)</label></div>
-                        <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="tsp_brute"><label class="form-check-label">TSP fuerza bruta <span class="badge bg-danger">NP</span> O(n!)</label></div>
                         <div class="form-check"><input class="form-check-input m3-alg" type="checkbox" value="reachability"><label class="form-check-label">Reachability (Savitch) <span class="badge bg-info text-dark">NSPACE</span></label></div>
                     </div>
                     <div class="row g-2 mb-2">
-                        <div class="col"><label class="form-label">Tamaño n:</label><input type="number" id="m3-tamano" class="form-control" value="1000" min="2" max="5000"></div>
+                        <div class="col"><label class="form-label">Tamaño n:</label><input type="number" id="m3-tamano" class="form-control" value="10" min="2" max="5000"></div>
                         <div class="col"><label class="form-label">Semilla:</label><input type="number" id="m3-semilla" class="form-control" value="42"></div>
                     </div>
                     <div class="form-check"><input class="form-check-input" type="checkbox" id="m3-series" checked><label class="form-check-label" for="m3-series">Incluir curva de crecimiento (tarda más)</label></div>
@@ -199,7 +243,116 @@ C,E,6</textarea></div>
                     <div id="m3-tabla" class="table-responsive mt-3"></div>
                 </div>
             </div>
+
+            <!-- Auditoría Estática con AST -->
+            <hr class="my-4">
+            <h4 class="mb-3">Auditoría Estática de Bucles Anidados (Módulo <code>ast</code>)</h4>
+            <div class="row">
+                <div class="col-lg-6">
+                    <label class="form-label">Código Python a analizar:</label>
+                    <textarea id="m3-ast-codigo" class="form-control font-monospace mb-2" rows="7">def multiplicar_matrices(A, B):
+    n = len(A)
+    C = [[0] * n for _ in range(n)]
+    for i in range(n):
+        for j in range(n):
+            for k in range(n):
+                C[i][j] += A[i][k] * B[k][j]
+    return C</textarea>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-dark flex-grow-1" id="btn-auditar-ast" type="button">Auditar con AST</button>
+                        <button class="btn btn-outline-secondary" id="btn-ejemplo-ast" type="button">Ejemplo recursivo</button>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <h6>Resultado del análisis estático</h6>
+                    <div id="m3-ast-resultado" class="border rounded p-3 bg-light" style="min-height: 205px;">
+                        <p class="text-muted mb-0">Presiona "Auditar con AST" para inspeccionar el árbol sintáctico.</p>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- ================= MÓDULO 4 ================= -->
+        <div class="tab-pane fade" id="mod4">
+            <h3 class="mb-3">Módulo 4: Corte de Varillas (Tabulación O(n²) vs. Recursión O(2ⁿ))</h3>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="mb-2">
+                        <label class="form-label">Longitud de la varilla (n):</label>
+                        <input type="number" id="m4-longitud" class="form-control" value="8" min="1" max="500">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Precios por longitud 1..n (separados por comas):</label>
+                        <textarea id="m4-precios" class="form-control font-monospace" rows="3">1, 5, 8, 9, 10, 17, 17, 20, 24, 30, 32, 35, 39, 42, 45, 48</textarea>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="m4-incluir-rec" checked>
+                        <label class="form-check-label" for="m4-incluir-rec">Comparar contra recursión ingenua O(2ⁿ)</label>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tope seguro recursivo (máx. 24):</label>
+                        <input type="number" id="m4-limite-rec" class="form-control" value="18" min="1" max="24">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary flex-grow-1" id="btn-ejecutar-m4" type="button">Resolver y comparar</button>
+                        <button class="btn btn-outline-secondary" id="btn-ejemplo-m4" type="button">Ejemplo n=14</button>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div id="m4-resumen" class="mb-3"></div>
+                    <h6>Crecimiento de tiempo: Tabulación O(n²) vs. Recursión O(2ⁿ)</h6>
+                    <div style="height:240px"><canvas id="m4-chart"></canvas></div>
+                    <div id="m4-tabla" class="table-responsive mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MÓDULO 5 ================= -->
+        <div class="tab-pane fade" id="mod5">
+            <h3 class="mb-3">Módulo 5: Probabilistas (Miller-Rabin Monte Carlo vs. Quicksort Las Vegas)</h3>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="mb-2">
+                        <label class="form-label">Número n para Miller-Rabin (Monte Carlo):</label>
+                        <input type="number" id="m5-numero" class="form-control" value="104729" min="2">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Rondas k de Miller-Rabin (error ≤ 4⁻ᵏ):</label>
+                        <input type="number" id="m5-rondas" class="form-control" value="6" min="1" max="40">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Tamaño arreglo Quicksort (Las Vegas):</label>
+                        <input type="number" id="m5-tamano" class="form-control" value="2500" min="10" max="50000">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col"><label class="form-label">Corridas LV:</label><input type="number" id="m5-ejecuciones" class="form-control" value="6" min="1" max="20"></div>
+                        <div class="col"><label class="form-label">Semilla:</label><input type="number" id="m5-semilla" class="form-control" value="42"></div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-danger" id="btn-ejecutar-m5" type="button">Ejecutar Benchmark Probabilista</button>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary flex-fill" id="btn-ejemplo-primo" type="button">Primo (104729)</button>
+                            <button class="btn btn-sm btn-outline-secondary flex-fill" id="btn-ejemplo-carmichael" type="button">Carmichael (561)</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div id="m5-resumen" class="mb-3"></div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6>Error Monte Carlo: cota 4⁻ᵏ vs. empírico (n=561)</h6>
+                            <div style="height:220px"><canvas id="m5-chart-error"></canvas></div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Variabilidad de tiempo Las Vegas (ms)</h6>
+                            <div style="height:220px"><canvas id="m5-chart-lv"></canvas></div>
+                        </div>
+                    </div>
+                    <div id="m5-tabla-lv" class="table-responsive mt-3"></div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- PANEL DE EXPLICACIÓN -->
@@ -224,5 +377,6 @@ C,E,6</textarea></div>
 <script src="./vendor/chart.umd.js"></script>
 <script src="./js/api.js"></script>
 <script src="./js/app.js"></script>
+<script src="./js/modulos_extra.js"></script>
 </body>
 </html>
